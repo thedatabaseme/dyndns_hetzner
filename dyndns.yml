@@ -1,0 +1,85 @@
+---
+
+# Version 1.0.0
+
+- hosts: "localhost"
+  vars:
+    dns_zone: "mydomain.com"
+    dyndns_name: "dyndns"
+    api_key: ""
+    external_ip_address: ""
+
+    # DO NOT SET!
+    dns_record_id: "" # Do not set!
+    dns_record_type: "" # Do not set!
+
+  tasks:
+    - name: Assert that external IP Address is set
+      assert:
+        that: "{{ external_ip_address | length > 0}}"
+        fail_msg:  "It seems that you haven't provided an external IP Address."
+        success_msg:  "IP Address provided. Proceeding."
+
+    - name: Get Zone ID for {{ dns_zone }}
+      uri:
+        url: "https://dns.hetzner.com/api/v1/zones?name={{ dns_zone }}"
+        method: GET
+        headers:
+          Auth-API-Token: "{{ api_key }}"
+      register: zone_id
+
+    - name: Get all DNS Records for Zone {{ dns_zone }}
+      uri:
+        url: "https://dns.hetzner.com/api/v1/records?zone_id={{ zone_id.json.zones[0].id }}"
+        method: GET
+        headers:
+          Auth-API-Token: "{{ api_key }}"
+      register: dns_records
+
+#    - debug:
+#        var: dns_records
+
+    - name: Lookup if DYNDNS Record {{ dyndns_name }} exists in Zone {{ dns_zone }}
+      set_fact:
+        dns_record_id: "{{ item.id }}"
+        dns_record_type: "{{ item.type }}"
+      when: item.name == dyndns_name
+      loop: "{{ dns_records.json.records }}"
+
+    - name: Assert that the Record if from Type A
+      assert:
+        that: dns_record_type == "A"
+        fail_msg:  "The DNS Record {{ dyndns_name }} already exist with a Record Type of {{ dns_record_type }}. Needs to be Type A. Please delete the Record manually and run the Playbook again."
+        success_msg:  "DNS Record Type is Type A as expected. Proceeding."
+      when: dns_record_type | length > 0
+
+#    - debug:
+#        var: dns_record_id
+
+    - name: DYNDNS Record does NOT exist, will create it with external IP as {{ external_ip_address }}
+      uri:
+        url: "https://dns.hetzner.com/api/v1/records"
+        method: POST
+        headers:
+          Auth-API-Token: "{{ api_key }}"
+        body_format: json
+        body:
+          name: "{{ dyndns_name }}"
+          type: "A"
+          value: "{{ external_ip_address }}"
+          zone_id: "{{ zone_id.json.zones[0].id }}"
+      when: (dns_record_id | length == 0 and external_ip_address | length > 0)
+
+    - name: DYNDNS Record does exist, will update it with external IP as {{ external_ip_address }}
+      uri:
+        url: "https://dns.hetzner.com/api/v1/records/{{ dns_record_id }}"
+        method: PUT
+        headers:
+          Auth-API-Token: "{{ api_key }}"
+        body_format: json
+        body:
+          name: "{{ dyndns_name }}"
+          type: "A"
+          value: "{{ external_ip_address }}"
+          zone_id: "{{ zone_id.json.zones[0].id }}"
+      when: (dns_record_id | length > 0 and external_ip_address | length > 0)
