@@ -9,7 +9,7 @@
     dns_zone: "mydomain.com"
     dyndns_name: "dyndns"
     api_key: ""
-#    external_ip_address: ""
+    external_ip_address: ""
 
     # DO NOT SET!
     dns_record_id: "" # Do not set!
