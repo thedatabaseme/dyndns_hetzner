@@ -3,6 +3,8 @@
 # Version 1.0.0
 
 - hosts: "localhost"
+  gather_facts: true
+  
   vars:
     dns_zone: "mydomain.com"
     dyndns_name: "dyndns"
