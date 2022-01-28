@@ -2,6 +2,11 @@
 
 - name: Manage DYNDNS Record
   block:
+    - name: Initialize Variables
+      set_fact:
+        dns_record_id: ""
+        dns_record_type: ""
+
     - name: Lookup if DYNDNS Record {{ dyndns_name }} exists in Zone {{ dns_zone }}
       set_fact:
         dns_record_id: "{{ item.id }}"
@@ -19,7 +24,7 @@
 #    - debug:
 #        var: dns_record_id
 
-    - name: DYNDNS Record does NOT exist, will create it with external IP as {{ external_ip_address }}
+    - name: DYNDNS Record {{ dyndns_name }} does NOT exist, will create it with external IP as {{ external_ip_address }}
       uri:
         url: "https://dns.hetzner.com/api/v1/records"
         method: POST
