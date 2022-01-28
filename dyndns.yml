@@ -46,4 +46,4 @@
       include_tasks: manage_record.yml
       loop: "{{ dyndns_names }}"
       loop_control:
-        label: dyndns_name
+        loop_var: dyndns_name
