@@ -9,7 +9,7 @@
       when: item.name == dyndns_name
       loop: "{{ dns_records.json.records }}"
 
-    - name: Assert that the Record if from Type A
+    - name: Assert that the Record is from Type A
       assert:
         that: dns_record_type == "A"
         fail_msg:  "The DNS Record {{ dyndns_name }} already exist with a Record Type of {{ dns_record_type }}. Needs to be Type A. Please delete the Record manually and run the Playbook again."
