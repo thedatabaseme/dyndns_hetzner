@@ -15,7 +15,7 @@ Playbook Variables
 --------------
 
 - `dns_zone` (Default `mydomain.com`): Top Level Zone you want to have the DynDNS Record managed / created.
-- `dyndns_name` (Default `dyndns`): The name of the DynDNS Record you want to get created. Will be added under the Top Level Domain given as `dns_zone`.
+- `dyndns_names` (Default `-dyndns`): A list of names of the DynDNS Records you want to get created. Will be added under the Top Level Domain given as `dns_zone`.
 - `api_key` (Default `NULL`): The API Key / Token you have to create within the Hetzner DNS Dashboard.
 - `external_ip_address` (Default `NULL`): The external IP Address you want to use within the DNS Record. May be your current IP given by your ISP.
 
@@ -29,7 +29,7 @@ Example Playbook run Command
 
 An example Playbook Call looks like this. Ofcourse you may want to specify the Variables within your Playbook or within your Inventory:
 
-    - ansible-playbook -i hosts -e "api_key=<HETZNER_DNS_API_KEY> dns_zone=myowndomain.com external_ip_address=92.2.1.118 dyndns_name=cloud" -k -K -u <USERNAME>
+    - ansible-playbook -i hosts -e "api_key=<HETZNER_DNS_API_KEY> dns_zone=myowndomain.com external_ip_address=92.2.1.118 dyndns_names=cloud" -k -K -u <USERNAME>
 
 
 Author Information
