@@ -29,8 +29,9 @@ Example Playbook run Command
 
 An example Playbook Call looks like this. Ofcourse you may want to specify the Variables within your Playbook or within your Inventory:
 
-    - ansible-playbook -i hosts -e "api_key=<HETZNER_DNS_API_KEY> dns_zone=myowndomain.com external_ip_address=92.2.1.118 dyndns_names=cloud" -k -K -u <USERNAME>
+    - ansible-playbook -i hosts -e "api_key=<HETZNER_DNS_API_KEY> dns_zone=myowndomain.com external_ip_address=92.2.1.118" -e '{ "dyndns_names":["cloud","*.cloud"] }' dyndns.yml -k -K -u <USERNAME>
 
+The variable `dyndns_names` should always be a `list` type. So even when you want only to set one DNS name to your `external_ip_address`, you have to specify it as a list like in the example above.
 
 Author Information
 ------------------
