@@ -18,13 +18,13 @@
 
   tasks:
     - name: Assert that external IP Address is set
-      assert:
-        that: "{{ external_ip_address | length > 0}}"
-        fail_msg:  "It seems that you haven't provided an external IP Address."
-        success_msg:  "IP Address provided. Proceeding."
+      ansible.builtin.assert:
+        that: "{{ external_ip_address | length > 0 }}"
+        fail_msg: "It seems that you haven't provided an external IP Address."
+        success_msg: "IP Address provided. Proceeding."
 
     - name: Get Zone ID for {{ dns_zone }}
-      uri:
+      ansible.builtin.uri:
         url: "https://dns.hetzner.com/api/v1/zones?name={{ dns_zone }}"
         method: GET
         headers:
@@ -32,7 +32,7 @@
       register: zone_id
 
     - name: Get all DNS Records for Zone {{ dns_zone }}
-      uri:
+      ansible.builtin.uri:
         url: "https://dns.hetzner.com/api/v1/records?zone_id={{ zone_id.json.zones[0].id }}"
         method: GET
         headers:

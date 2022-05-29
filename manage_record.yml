@@ -15,7 +15,7 @@
       loop: "{{ dns_records.json.records }}"
 
     - name: Assert that the Record is from Type A
-      assert:
+      ansible.builtin.assert:
         that: dns_record_type == "A"
         fail_msg:  "The DNS Record {{ dyndns_name }} already exist with a Record Type of {{ dns_record_type }}. Needs to be Type A. Please delete the Record manually and run the Playbook again."
         success_msg:  "DNS Record Type is Type A as expected. Proceeding."
@@ -25,7 +25,7 @@
 #        var: dns_record_id
 
     - name: DYNDNS Record {{ dyndns_name }} does NOT exist, will create it with external IP as {{ external_ip_address }}
-      uri:
+      ansible.builtin.uri:
         url: "https://dns.hetzner.com/api/v1/records"
         method: POST
         headers:
@@ -39,7 +39,7 @@
       when: (dns_record_id | length == 0 and external_ip_address | length > 0)
 
     - name: DYNDNS Record does exist, will update it with external IP as {{ external_ip_address }}
-      uri:
+      ansible.builtin.uri:
         url: "https://dns.hetzner.com/api/v1/records/{{ dns_record_id }}"
         method: PUT
         headers:
@@ -53,5 +53,6 @@
       when: (dns_record_id | length > 0 and external_ip_address | length > 0)
 
   rescue:
-    - debug:
+    - name: There was an error
+      debug:
         msg: "There was an Error DNS name {{ dyndns_name }} registration. Proceed with next entry!"
