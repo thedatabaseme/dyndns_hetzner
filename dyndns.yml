@@ -9,6 +9,7 @@
     dns_zone: "mydomain.com"
     dyndns_names:
       - "dyndns"
+    dyndns_ttl: 300
     api_key: ""
     external_ip_address: ""
 

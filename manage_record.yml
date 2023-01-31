@@ -36,6 +36,7 @@
           type: "A"
           value: "{{ external_ip_address }}"
           zone_id: "{{ zone_id.json.zones[0].id }}"
+          ttl: "{{ dyndns_ttl }}"
       when: (dns_record_id | length == 0 and external_ip_address | length > 0)
 
     - name: DYNDNS Record does exist, will update it with external IP as {{ external_ip_address }}
@@ -50,6 +51,7 @@
           type: "A"
           value: "{{ external_ip_address }}"
           zone_id: "{{ zone_id.json.zones[0].id }}"
+          ttl: "{{ dyndns_ttl }}"
       when: (dns_record_id | length > 0 and external_ip_address | length > 0)
 
   rescue:
