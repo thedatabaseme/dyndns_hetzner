@@ -2,59 +2,56 @@
 
 - name: Manage DYNDNS Record
   block:
-    - name: Initialize Variables
-      set_fact:
-        dns_record_id: ""
-        dns_record_type: ""
-
-    - name: Lookup if DYNDNS Record {{ dyndns_name }} exists in Zone {{ dns_zone }}
-      set_fact:
+    - name: Lookup if DYNDNS Record exists in Zone {{ dns_zone }}
+      ansible.builtin.set_fact:
         dns_record_id: "{{ item.id }}"
         dns_record_type: "{{ item.type }}"
       when: item.name == dyndns_name
-      loop: "{{ dns_records.json.records }}"
+      loop: "{{ dns_records.json.rrsets }}"
 
     - name: Assert that the Record is from Type A
       ansible.builtin.assert:
         that: dns_record_type == "A"
-        fail_msg:  "The DNS Record {{ dyndns_name }} already exist with a Record Type of {{ dns_record_type }}. Needs to be Type A. Please delete the Record manually and run the Playbook again."
-        success_msg:  "DNS Record Type is Type A as expected. Proceeding."
+        fail_msg: >
+          The DNS Record {{ dyndns_name }} already exist with a Record Type of {{ dns_record_type }}.
+          Needs to be Type A. Please delete the Record manually and run the Playbook again.
+        success_msg: "DNS Record Type is Type A as expected. Proceeding."
       when: dns_record_type | length > 0
 
-#    - debug:
-#        var: dns_record_id
-
-    - name: DYNDNS Record {{ dyndns_name }} does NOT exist, will create it with external IP as {{ external_ip_address }}
+    - name: DYNDNS Record does NOT exist, will create it with external IP as {{ external_ip_address }}
       ansible.builtin.uri:
-        url: "https://dns.hetzner.com/api/v1/records"
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: POST
         headers:
-          Auth-API-Token: "{{ api_key }}"
+          Authorization: "Bearer {{ api_key }}"
         body_format: json
         body:
           name: "{{ dyndns_name }}"
           type: "A"
-          value: "{{ external_ip_address }}"
-          zone_id: "{{ zone_id.json.zones[0].id }}"
+          records:
+            - value: "{{ external_ip_address }}"
+              comment: ""
           ttl: "{{ dyndns_ttl }}"
       when: (dns_record_id | length == 0 and external_ip_address | length > 0)
 
     - name: DYNDNS Record does exist, will update it with external IP as {{ external_ip_address }}
       ansible.builtin.uri:
-        url: "https://dns.hetzner.com/api/v1/records/{{ dns_record_id }}"
-        method: PUT
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets/{{ dyndns_name }}/{{ dns_record_type }}/actions/set_records"
+        method: POST
         headers:
-          Auth-API-Token: "{{ api_key }}"
+          Authorization: "Bearer {{ api_key }}"
+        status_code:
+          - 200
+          - 201
         body_format: json
         body:
-          name: "{{ dyndns_name }}"
-          type: "A"
-          value: "{{ external_ip_address }}"
-          zone_id: "{{ zone_id.json.zones[0].id }}"
+          records:
+            - value: "{{ external_ip_address }}"
+              comment: ""
           ttl: "{{ dyndns_ttl }}"
       when: (dns_record_id | length > 0 and external_ip_address | length > 0)
 
   rescue:
     - name: There was an error
-      debug:
+      ansible.builtin.debug:
         msg: "There was an Error DNS name {{ dyndns_name }} registration. Proceed with next entry!"
